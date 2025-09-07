@@ -1,0 +1,59 @@
+{
+  "name": "dg-savings-app",
+  "version": "1.0.0",
+  "description": "Εφαρμογή διαχείρισης οικονομικών και αποταμιεύσεων",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder",
+    "dist-win": "electron-builder --win",
+    "build": "electron-builder --publish=never",
+    "build-portable": "electron-packager . \"DG Savings App\" --platform=win32 --arch=x64 --out=dist/ --overwrite",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "finance",
+    "savings",
+    "budget",
+    "electron"
+  ],
+  "author": "DG",
+  "license": "ISC",
+  "devDependencies": {
+    "@electron/rebuild": "^4.0.1",
+    "electron": "^27.3.11",
+    "electron-builder": "^24.6.4",
+    "electron-packager": "^17.1.2"
+  },
+  "build": {
+    "appId": "com.dg.savings-app",
+    "productName": "DG Savings App",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!node_modules",
+      "!dist",
+      "!.vscode"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        }
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}

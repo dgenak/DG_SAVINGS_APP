@@ -1,0 +1,1743 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DG SAVINGS</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+  <style>
+    :root {
+      --primary: #474b50;
+      --secondary: #3498db;
+      --accent: #e74c3c;
+      --success: #2ecc71;
+      --light-bg: #f5f7fa;
+      --dark-bg: #1e1e1e;
+      --card-bg: #ffffff;
+      --text-dark: #2c3e50;
+      --text-light: #ecf0f1;
+      --border-radius: 12px;
+      --shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    /* Dark theme variables */
+    [data-theme="dark"] {
+      --primary: #3498db;
+      --secondary: #2ecc71;
+      --light-bg: #1e1e1e;
+      --dark-bg: #2c2c2c;
+      --card-bg: #2c2c2c;
+      --text-dark: #ecf0f1;
+      --text-light: #bdc3c7;
+      --shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+
+    /* Purple theme variables */
+    [data-theme="purple"] {
+      --primary: #8e44ad;
+      --secondary: #9b59b6;
+      --accent: #e74c3c;
+      --success: #2ecc71;
+      --light-bg: #f5eef8;
+      --dark-bg: #8e44ad;
+      --card-bg: #ffffff;
+      --text-dark: #2c3e50;
+      --text-light: #ffffff;
+      --shadow: 0 4px 12px rgba(142, 68, 173, 0.2);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Theme toggle button */
+    .theme-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: var(--secondary);
+      color: white;
+      border: none;
+      border-radius: 20px;
+      width: 50px;
+      height: 50px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      z-index: 100;
+      transition: all 0.3s ease;
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    .theme-options {
+      position: absolute;
+      top: 70px;
+      right: 20px;
+      background: var(--card-bg);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 10px;
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      z-index: 99;
+    }
+
+    .theme-option {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      background: var(--light-bg);
+      color: var(--text-dark);
+    }
+
+    .theme-option:hover {
+      background: var(--secondary);
+      color: white;
+    }
+
+    .theme-options.show {
+      display: flex;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--light-bg);
+      color: var(--text-dark);
+      line-height: 1.6;
+      padding: 20px;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    .dashboard-container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: var(--primary);
+      color: var(--text-light);
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      font-size: 1.2rem;
+      opacity: 0.9;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+    }
+
+    .card h2 {
+      margin-bottom: 15px;
+      color: var(--primary);
+      border-bottom: 2px solid var(--secondary);
+      padding-bottom: 10px;
+    }
+
+    .kpi-container {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .kpi {
+      flex: 1;
+      min-width: 180px;
+      text-align: center;
+      padding: 15px;
+      background: var(--light-bg);
+      border-radius: var(--border-radius);
+    }
+
+    .kpi-value {
+      font-size: 1.8rem;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+
+    .kpi-label {
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+
+    .positive {
+      color: var(--success);
+    }
+
+    .negative {
+      color: var(--accent);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+    }
+
+    .form-group {
+      margin-bottom: 10px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 600;
+    }
+
+    input, button, select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+
+    button, .btn {
+      background: var(--secondary);
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s;
+      text-align: center;
+      display: inline-block;
+      text-decoration: none;
+    }
+
+    button:hover, .btn:hover {
+      background: var(--primary);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: center;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background: var(--primary);
+      color: white;
+    }
+
+    tr:nth-child(even) {
+      background: var(--light-bg);
+    }
+
+    .chart-container {
+      position: relative;
+      height: 250px;
+      width: 100%;
+    }
+
+    .progress-bar {
+      background: #e0e0e0;
+      border-radius: 5px;
+      height: 20px;
+      margin-top: 5px;
+      overflow: hidden;
+    }
+
+    .progress {
+      background: var(--success);
+      height: 100%;
+      border-radius: 5px;
+      text-align: right;
+      padding-right: 5px;
+      font-size: 12px;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .goal-item {
+      margin-bottom: 15px;
+      padding: 10px;
+      background: var(--light-bg);
+      border-radius: 8px;
+    }
+
+    .download-options {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin: 30px 0;
+      flex-wrap: wrap;
+    }
+
+    .download-btn {
+      padding: 15px 30px;
+      font-size: 1.1rem;
+      min-width: 250px;
+      text-align: center;
+    }
+
+    .btn-monthly {
+      background: var(--success);
+    }
+
+    .btn-yearly {
+      background: var(--accent);
+    }
+
+    /* Νέες προσθήκες για κουμπιά διαχείρισης */
+    .action-buttons {
+      display: flex;
+      gap: 5px;
+      justify-content: center;
+    }
+
+    .btn-delete {
+      background: var(--accent);
+      padding: 5px 10px;
+      font-size: 0.8rem;
+      border-radius: 4px;
+    }
+
+    .btn-move {
+      background: var(--primary);
+      padding: 5px 10px;
+      font-size: 0.8rem;
+      border-radius: 4px;
+    }
+
+    /* Στυλ για το νέο τμήμα δανείων */
+    .loans-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .loan-section {
+      background-color: var(--card-bg);
+      border-radius: 8px;
+      padding: 15px;
+      box-shadow: var(--shadow);
+    }
+
+    .loan-form {
+      margin-bottom: 15px;
+    }
+
+    .loan-form input {
+      display: block;
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    .loan-form button {
+      background-color: var(--success);
+      color: var(--text-light);
+      padding: 8px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .loan-list {
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid var(--primary);
+      padding: 10px;
+      border-radius: 4px;
+    }
+
+    .loan-item {
+      padding: 8px;
+      border-bottom: 1px solid var(--primary);
+    }
+
+    .loan-item:last-child {
+      border-bottom: none;
+    }
+
+    /* Βελτιωμένα fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    * {
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    }
+
+    /* Βελτιωμένα cards */
+    .card {
+    border: 1px solid rgba(0,0,0,0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+
+    /* Βελτιωμένα κουμπιά */
+    button, .btn {
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    position: relative;
+    overflow: hidden;
+    }
+
+    button:after, .btn:after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.5);
+    opacity: 0;
+    border-radius: 100%;
+    transform: scale(1, 1) translate(-50%);
+    transform-origin: 50% 50%;
+    }
+
+    button:hover:after, .btn:hover:after {
+    animation: ripple 0.6s ease-out;
+    }
+
+    @keyframes ripple {
+    0% {
+        transform: scale(0, 0);
+        opacity: 0.5;
+    }
+    100% {
+        transform: scale(20, 20);
+        opacity: 0;
+    }
+    }
+    /* Στυλ για το κουμπί απόκρυψης */
+    .privacy-toggle {
+        position: absolute;
+        top: 20px;
+        right: 80px;
+        background: var(--secondary);
+        color: white;
+        border: none;
+        border-radius: 20px;
+        width: 50px;
+        height: 50px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        z-index: 100;
+        transition: all 0.3s ease;
+    }
+
+    .privacy-toggle:hover {
+        transform: scale(1.1);
+    }
+
+    /* Κλάση για το blur effect */
+    .blur-numbers {
+        filter: blur(5px);
+        transition: filter 0.3s ease;
+        user-select: none;
+        pointer-events: none;
+    }
+
+    /* Responsive adjustment */
+    @media (max-width: 768px) {
+        .privacy-toggle {
+            right: 70px;
+            width: 40px;
+            height: 40px;
+        }
+    }
+
+    /* Βελτιωμένα input fields */
+    input, select {
+    transition: all 0.2s ease;
+    border: 1px solid #ddd;
+    background-color: rgba(255, 255, 255, 0.8);
+    }
+
+    input:focus, select:focus {
+    outline: none;
+    border-color: var(--secondary);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    }
+
+    /* Βελτιωμένος πίνακας */
+    table {
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    }
+
+    th {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    }
+
+    /* Smooth animations για charts */
+    .chart-container {
+    transition: opacity 0.3s ease;
+    }
+
+    /* Loading state */
+    .loading {
+    opacity: 0.7;
+    pointer-events: none;
+    }
+
+    /* Progress bars */
+    .progress {
+    transition: width 0.5s ease-in-out;
+    }
+
+    /* Header improvements */
+    header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    position: relative;
+    overflow: hidden;
+    }
+
+    header:before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+    }
+    /* Προσθήκη στο τέλος του CSS */
+    .blur-numbers {
+        color: transparent !important;
+        text-shadow: 0 0 8px rgba(0, 0, 0, 0.7);
+    }
+
+    /* Διασφάλιση ότι τα εικονίδια δεν θα θολώνουν */
+    .privacy-toggle, .theme-toggle {
+        filter: none !important;
+    }
+
+
+    /* KPI cards */
+    .kpi {
+    transition: all 0.3s ease;
+    border-left: 3px solid var(--secondary);
+    }
+
+    .kpi:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    /* Notification toast */
+    .toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    background: var(--success);
+    color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 1000;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    }
+
+    .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+    }
+
+    /* Tooltips */
+    .tooltip {
+    position: relative;
+    cursor: pointer;
+    }
+
+    .tooltip:before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 8px 12px;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    z-index: 100;
+    }
+
+    .tooltip:hover:before {
+    opacity: 1;
+    visibility: visible;
+    bottom: calc(100% + 5px);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .kpi {
+        min-width: 100%;
+      }
+      
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .download-options {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+      }
+      
+      .loans-container {
+        grid-template-columns: 1fr;
+      }
+
+      .theme-options {
+        right: 10px;
+      }
+    }
+
+    /* PDF specific styles */
+    .pdf-template {
+      padding: 20px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    .pdf-template h1 {
+      text-align: center;
+      color: var(--primary);
+      margin-bottom: 20px;
+    }
+    
+    .pdf-template .period {
+      text-align: center;
+      margin-bottom: 30px;
+      font-style: italic;
+    }
+    
+    .pdf-template .summary {
+      margin-bottom: 30px;
+      padding: 15px;
+      background: var(--light-bg);
+      border-radius: var(--border-radius);
+    }
+    
+    .pdf-template table {
+      width: 100%;
+      margin-bottom: 30px;
+    }
+
+    @media (max-width: 768px) {
+    .dashboard-container {
+      padding: 10px;
+    }
+    
+    header {
+      padding: 15px;
+    }
+    
+    h1 {
+      font-size: 1.8rem;
+    }
+    
+    .kpi-container {
+      flex-direction: column;
+    }
+    
+    .kpi {
+      margin-bottom: 10px;
+    }
+    
+    .form-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .action-buttons {
+      flex-direction: column;
+      gap: 5px;
+    }
+    
+    .action-buttons button {
+      width: 100%;
+    }
+    
+    /* Βελτίωση πίνακα για κινητά */
+    table {
+      font-size: 0.8rem;
+    }
+    
+    th, td {
+      padding: 8px 4px;
+    }
+    
+    /* Loan sections stack on mobile */
+    .loans-container {
+      grid-template-columns: 1fr;
+    }
+  }
+  </style>
+</head>
+<body>
+    <div id="loadingIndicator" class="loading" style="display: none;">
+    <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.7); z-index: 9999; display: flex; align-items: center; justify-content: center;">
+        <div style="background: var(--card-bg); padding: 20px; border-radius: 8px; box-shadow: var(--shadow);">
+        <div style="text-align: center;">Φόρτωση...</div>
+        </div>
+    </div>
+    </div>
+
+    <!-- Προσθήκη toast notifications -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Βελτίωση header -->
+    <header>
+        <h1>DG | SAVINGS</h1>
+        <p class="subtitle">Διαχείριση Προσωπικών Οικονομικών</p>
+        <button class="theme-toggle" id="themeToggle" title="Αλλαγή θέματος" data-tooltip="Αλλαγή θέματος">🎨</button>
+        <button class="privacy-toggle" id="privacyToggle" title="Απόκρυψη δεδομένων" data-tooltip="Απόκρυψη δεδομένων">👁️</button>
+        <div class="theme-options" id="themeOptions">
+            <button class="theme-option" data-theme="light">light mode</button>
+            <button class="theme-option" data-theme="dark">dark mode</button>
+            <button class="theme-option" data-theme="purple">eve mode</button>
+        </div>
+    </header>
+
+    <!-- KPIs -->
+    <div class="grid">
+      <div class="card">
+        <h2>Σύνολο</h2>
+        <div class="kpi-container">
+          <div class="kpi">
+            <div class="kpi-label">Συνολικό Πορτοφόλι</div>
+            <div class="kpi-value" id="totalKPI">0€</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Μεταβολή</div>
+            <div class="kpi-value" id="growthKPI">0%</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Cash %</div>
+            <div class="kpi-value" id="cashKPI">0%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Φόρμα εισαγωγής δεδομένων -->
+    <div class="card">
+      <h2>Προσθήκη Νέων Δεδομένων</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="month">Μήνας</label>
+          <select id="month">
+            <option value="Ιανουάριος">Ιανουάριος</option>
+            <option value="Φεβρουάριος">Φεβρουάριος</option>
+            <option value="Μάρτιος">Μάρτιος</option>
+            <option value="Απρίλιος">Απρίλιος</option>
+            <option value="Μάιος">Μάιος</option>
+            <option value="Ιούνιος">Ιούνιος</option>
+            <option value="Ιούλιος">Ιούλιος</option>
+            <option value="Αύγουστος">Αύγουστος</option>
+            <option value="Σεπτέμβριος">Σεπτέμβριος</option>
+            <option value="Οκτώβριος">Οκτώβριος</option>
+            <option value="Νοέμβριος">Νοέμβριος</option>
+            <option value="Δεκέμβριος">Δεκέμβριος</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="year">Έτος</label>
+          <select id="year">
+            <option value="2023">2023</option>
+            <option value="2024">2024</option>
+            <option value="2025" selected>2025</option>
+            <option value="2026">2026</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="cash">Cash (€)</label>
+          <input type="number" id="cash" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label for="etoro">Etoro (€)</label>
+          <input type="number" id="etoro" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label for="revolut">Revolut (€)</label>
+          <input type="number" id="revolut" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label for="winbank">Winbank (€)</label>
+          <input type="number" id="winbank" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label for="stocks">Stocks (€)</label>
+          <input type="number" id="stocks" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label for="youthpass">Youth Pass (€)</label>
+          <input type="number" id="youthpass" placeholder="0">
+        </div>
+
+      </div>
+      <button onclick="addData()" style="margin-top: 15px;">Προσθήκη Δεδομένων</button>
+    </div>
+
+    <!-- Πίνακας δεδομένων -->
+    <div class="card">
+      <h2>Ιστορικό Δεδομένων</h2>
+      <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+        <input type="text" id="searchInput" placeholder="Αναζήτηση..." style="flex: 1;">
+        <select id="yearFilter">
+        <option value="">Όλα τα έτη</option>
+        <option value="2023">2023</option>
+        <option value="2024">2024</option>
+        <option value="2025">2025</option>
+        </select>
+      </div>
+      <div style="overflow-x: auto;">
+        <table id="dataTable">
+          <thead>
+            <tr>
+              <th>Μήνας</th>
+              <th>Έτος</th>
+              <th>Cash (€)</th>
+              <th>Etoro (€)</th>
+              <th>Revolut (€)</th>
+              <th>Winbank (€)</th>
+              <th>Stocks (€)</th>
+              <th>Youth Pass (€)</th>
+              <th>Σύνολο (€)</th>
+              <th>Ενέργειες</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Data will be inserted here dynamically -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Διαγράμματα -->
+    <div class="grid">
+      <div class="card">
+        <h2>Κατανομή Περιουσίας</h2>
+        <div class="chart-container">
+          <canvas id="pieChart"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Εξέλιξη Σύνολου</h2>
+        <div class="chart-container">
+          <canvas id="lineChart"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Σύγκριση Περιουσιακών Στοιχείων</h2>
+        <div class="chart-container">
+          <canvas id="barChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Στόχοι -->
+    <div class="card">
+      <h2>Στόχοι Αγορών</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="goalName">Ονομασία Στόχου</label>
+          <input type="text" id="goalName" placeholder="π.χ. Νέο Laptop">
+        </div>
+        <div class="form-group">
+          <label for="goalCost">Κόστος (€)</label>
+          <input type="number" id="goalCost" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label for="goalSaved">Μαζεμένα (€)</label>
+          <input type="number" id="goalSaved" placeholder="0">
+        </div>
+      </div>
+      <button onclick="addGoal()" style="margin-top: 15px;">Προσθήκη Στόχου</button>
+      
+      <div id="goals" style="margin-top: 20px;">
+        <!-- Goals will be inserted here dynamically -->
+      </div>
+    </div>
+
+    <!-- Νέα Ενότητα Διαχείρισης Δανείων -->
+    <div class="card">
+      <h2>Διαχείριση Δανείων</h2>
+      
+      <div class="loans-container">
+        <!-- Δάνεια που έδωσα -->
+        <div class="loan-section">
+          <h3>Δάνεια που έδωσα</h3>
+          <div class="loan-form">
+            <input type="text" id="given-name" placeholder="Όνομα ατόμου">
+            <input type="number" id="given-amount" placeholder="Ποσό (€)">
+            <input type="date" id="given-date">
+            <button onclick="addGivenLoan()">Προσθήκη</button>
+          </div>
+          <div id="given-list" class="loan-list">
+            <!-- Εδώ θα προστεθούν τα δάνεια που έχεις δώσει -->
+          </div>
+        </div>
+        
+        <!-- Δάνεια που χρωστάω -->
+        <div class="loan-section">
+          <h3>Δάνεια που χρωστάω</h3>
+          <div class="loan-form">
+            <input type="text" id="owed-name" placeholder="Όνομα ατόμου">
+            <input type="number" id="owed-amount" placeholder="Ποσό (€)">
+            <input type="date" id="owed-date">
+            <button onclick="addOwedLoan()">Προσθήκη</button>
+          </div>
+          <div id="owed-list" class="loan-list">
+            <!-- Εδώ θα προστεθούν τα δάνεια που χρωστάς -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="download-options">
+    <button class="download-btn btn-monthly" onclick="downloadMonthlyReport()">📥 Μηνιαία Αναφορά</button>
+    <button class="download-btn btn-yearly" onclick="downloadYearlyReport()">📊 Ολική Πορεία Savings</button>
+  </div>
+
+  <script>
+    let financeData = [];
+    let goalsData = [];
+    let loansGiven = [];
+    let loansOwed = [];
+    let barChart, lineChart, pieChart;
+    let isBlurred = false;
+
+    // Φόρτωση δεδομένων από localStorage
+    function loadData() {
+      const savedData = localStorage.getItem('financeData');
+      if (savedData) {
+        return JSON.parse(savedData);
+      }
+      return { financeData: [], goals: [], loansGiven: [], loansOwed: [] };
+    }
+
+    // Αποθήκευση δεδομένων στο localStorage
+    function saveData() {
+      const dataToSave = {
+        financeData,
+        goals: goalsData,
+        loansGiven,
+        loansOwed
+      };
+      localStorage.setItem('financeData', JSON.stringify(dataToSave));
+    }
+
+    // Φόρτωση δεδομένων κατά την εκκίνηση
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedData = loadData();
+      financeData = savedData.financeData || [];
+      goalsData = savedData.goals || [];
+      loansGiven = savedData.loansGiven || [];
+      loansOwed = savedData.loansOwed || [];
+      
+      refreshTable();
+      updateKPIs();
+      updateCharts();
+      refreshGoals();
+      refreshLoans();
+    });
+
+    function refreshGoals() {
+      const goalsDiv = document.getElementById("goals");
+      goalsDiv.innerHTML = '';
+      
+      goalsData.forEach(goal => {
+        const percent = Math.min((goal.saved / goal.cost) * 100, 100).toFixed(1);
+        const goalItem = document.createElement("div");
+        goalItem.className = "goal-item";
+        goalItem.innerHTML = `
+          <h3>${goal.name}</h3>
+          <p>Στόχος: ${goal.cost.toFixed(2)}€ | Μαζεμένα: ${goal.saved.toFixed(2)}€</p>
+          <div class="progress-bar">
+            <div class="progress" style="width: ${percent}%">${percent}%</div>
+          </div>
+        `;
+        goalsDiv.appendChild(goalItem);
+      });
+    }
+
+
+    function refreshTable() {
+      const tableBody = document.querySelector("#dataTable tbody");
+      tableBody.innerHTML = '';
+      
+      // Sort data by year and month
+      const monthOrder = {
+        "Ιανουάριος": 1, "Φεβρουάριος": 2, "Μάρτιος": 3, "Απρίλιος": 4,
+        "Μάιος": 5, "Ιούνιος": 6, "Ιούλιος": 7, "Αύγουστος": 8,
+        "Σεπτέμβριος": 9, "Οκτώβριος": 10, "Νοέμβριος": 11, "Δεκέμβριος": 12
+      };
+      
+      financeData.sort((a, b) => {
+        if (a.year !== b.year) return a.year - b.year;
+        return monthOrder[a.month] - monthOrder[b.month];
+      });
+      
+      financeData.forEach((data, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${data.month}</td>
+          <td>${data.year}</td>
+          <td>${data.cash.toFixed(2)}</td>
+          <td>${data.etoro.toFixed(2)}</td>
+          <td>${data.revolut.toFixed(2)}</td>
+          <td>${data.winbank.toFixed(2)}</td>
+          <td>${data.stocks.toFixed(2)}</td>
+          <td>${(data.youthpass ?? 0).toFixed(2)}</td>
+          <td><strong>${data.total.toFixed(2)}</strong></td>
+          <td class="action-buttons">
+            <button class="btn-delete" onclick="deleteData(${index})">Διαγραφή</button>
+            <button class="btn-move" onclick="moveDataUp(${index})" ${index === 0 ? 'disabled' : ''}>↑</button>
+            <button class="btn-move" onclick="moveDataDown(${index})" ${index === financeData.length - 1 ? 'disabled' : ''}>↓</button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    function deleteData(index) {
+      if (confirm("Είστε σίγουρος ότι θέλετε να διαγράψετε αυτή την εγγραφή;")) {
+        financeData.splice(index, 1);
+        // ΑΠΟΘΗΚΕΥΣΗ ΔΕΔΟΜΕΝΩΝ
+        saveData();
+        refreshTable();
+        updateKPIs();
+        updateCharts();
+      }
+    }
+
+    function moveDataUp(index) {
+      if (index > 0) {
+        [financeData[index], financeData[index - 1]] = [financeData[index - 1], financeData[index]];
+        // ΑΠΟΘΗΚΕΥΣΗ ΔΕΔΟΜΕΝΩΝ
+        saveData();
+        refreshTable();
+        updateCharts();
+      }
+    }
+
+    function moveDataDown(index) {
+      if (index < financeData.length - 1) {
+        [financeData[index], financeData[index + 1]] = [financeData[index + 1], financeData[index]];
+        // ΑΠΟΘΗΚΕΥΣΗ ΔΕΔΟΜΕΝΩΝ
+        saveData();
+        refreshTable();
+        updateCharts();
+      }
+    }
+
+
+    function updateKPIs() {
+      if (financeData.length < 1) return;
+      
+      const latest = financeData[financeData.length - 1];
+      const prev = financeData.length > 1 ? financeData[financeData.length - 2] : {total: latest.total};
+      const growth = ((latest.total - prev.total) / prev.total * 100).toFixed(2);
+      const cashPercent = ((latest.cash / latest.total) * 100).toFixed(1);
+      
+      document.getElementById("totalKPI").textContent = `${latest.total.toFixed(2)}€`;
+      
+      const growthElement = document.getElementById("growthKPI");
+      growthElement.textContent = `${growth}%`;
+      growthElement.className = `kpi-value ${growth >= 0 ? 'positive' : 'negative'}`;
+      
+      document.getElementById("cashKPI").textContent = `${cashPercent}%`;
+    }
+
+    function updateCharts() {
+        if (financeData.length === 0) return;
+
+        setLoadingState(true);
+
+        setTimeout(() => {
+            const labels = financeData.map(d => `${d.month} ${d.year}`);
+            const cashData = financeData.map(d => d.cash);
+            const etoroData = financeData.map(d => d.etoro);
+            const revolutData = financeData.map(d => d.revolut);
+            const winbankData = financeData.map(d => d.winbank);
+            const stocksData = financeData.map(d => d.stocks);
+            const totalsData = financeData.map(d => d.total);
+            const youthpass = parseFloat(document.getElementById("youthpass").value) || 0;
+
+            const latest = financeData[financeData.length - 1];
+            const pieData = [latest.cash, latest.etoro, latest.revolut, latest.winbank, latest.stocks, latest.youthpass];
+
+            // Καταστροφή παλιών charts
+            if (pieChart) pieChart.destroy();
+            if (lineChart) lineChart.destroy();
+            if (barChart) barChart.destroy();
+
+            // Δημιουργία Pie Chart
+            pieChart = new Chart(document.getElementById('pieChart'), {
+                type: 'pie',
+                data: {
+                    labels: ['Cash', 'Etoro', 'Revolut', 'Winbank', 'Stocks', 'Youth Pass'],
+                    datasets: [{
+                        data: pieData,
+                        backgroundColor: [
+                            '#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6', '#34495e'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Δημιουργία Line Chart
+            lineChart = new Chart(document.getElementById('lineChart'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Σύνολο',
+                        data: totalsData,
+                        borderColor: '#3498db',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Δημιουργία Bar Chart
+            barChart = new Chart(document.getElementById('barChart'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Cash',
+                            data: cashData,
+                            backgroundColor: '#3498db'
+                        },
+                        {
+                            label: 'Etoro',
+                            data: etoroData,
+                            backgroundColor: '#2ecc71'
+                        },
+                        {
+                            label: 'Revolut',
+                            data: revolutData,
+                            backgroundColor: '#e74c3c'
+                        },
+                        {
+                            label: 'Winbank',
+                            data: winbankData,
+                            backgroundColor: '#f39c12'
+                        },
+                        {
+                            label: 'Stocks',
+                            data: stocksData,
+                            backgroundColor: '#9b59b6'
+                        },
+                        {
+                            label: 'Youth Pass',
+                            data: youthpassData,
+                            backgroundColor: '#34495e'
+                        }
+                        
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            stacked: true
+                        },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            setTimeout(addChartInteractions, 500);
+            setLoadingState(false);
+        }, 300);
+        }
+
+
+    function addChartInteractions() {
+        const charts = [pieChart, lineChart, barChart];
+        
+        charts.forEach(chart => {
+            if (!chart) return;
+            
+            const canvas = chart.canvas;
+            canvas.style.cursor = 'pointer';
+            canvas.title = 'Κάντε κλικ για λεπτομέρειες';
+        });
+    }
+    function addGoal() {
+      const name = document.getElementById("goalName").value;
+      const cost = parseFloat(document.getElementById("goalCost").value) || 0;
+      const saved = parseFloat(document.getElementById("goalSaved").value) || 0;
+      
+      if (!name || cost <= 0) {
+        alert("Παρακαλώ συμπληρώστε το όνομα και το κόστος του στόχου.");
+        return;
+      }
+      
+      goalsData.push({ name, cost, saved });
+      
+      // ΑΠΟΘΗΚΕΥΣΗ ΔΕΔΟΜΕΝΩΝ
+      saveData();
+      
+      refreshGoals();
+      
+      // Clear form fields
+      document.getElementById("goalName").value = "";
+      document.getElementById("goalCost").value = "";
+      document.getElementById("goalSaved").value = "";
+    }
+
+    // Συναρτήσεις για τα δάνεια
+    function addGivenLoan() {      const name = document.getElementById("given-name").value;
+      const amount = parseFloat(document.getElementById("given-amount").value) || 0;
+      const date = document.getElementById("given-date").value;
+      
+      if (name && amount && date) {
+        loansGiven.push({ name, amount, date });
+        
+        // ΑΠΟΘΗΚΕΥΣΗ ΔΕΔΟΜΕΝΩΝ
+        saveData();
+        
+        refreshLoans();
+        
+        // Clear form fields
+        document.getElementById("given-name").value = "";
+        document.getElementById("given-amount").value = "";
+        document.getElementById("given-date").value = "";
+      } else {
+        alert("Συμπλήρωσε όλα τα πεδία!");
+      }
+    }
+
+    function addOwedLoan() {
+      const name = document.getElementById("owed-name").value;
+      const amount = parseFloat(document.getElementById("owed-amount").value) || 0;
+      const date = document.getElementById("owed-date").value;
+      
+      if (name && amount && date) {
+        loansOwed.push({ name, amount, date });
+        
+        // ΑΠΟΘΗΚΕΥΣΗ ΔΕΔΟΜΕΝΩΝ
+        saveData();
+        
+        refreshLoans();
+        
+        // Clear form fields
+        document.getElementById("owed-name").value = "";
+        document.getElementById("owed-amount").value = "";
+        document.getElementById("owed-date").value = "";
+      } else {
+        alert("Συμπλήρωσε όλα τα πεδία!");
+      }
+    }
+
+    function refreshLoans() {
+      const givenList = document.getElementById("given-list");
+      const owedList = document.getElementById("owed-list");
+      
+      givenList.innerHTML = '';
+      owedList.innerHTML = '';
+      
+      // Προσθήκη δανείων που έδωσες
+      loansGiven.forEach((loan, index) => {
+        const loanItem = document.createElement("div");
+        loanItem.className = "loan-item";
+        loanItem.innerHTML = `
+          <strong>${loan.name}</strong>: ${loan.amount.toFixed(2)}€ (${new Date(loan.date).toLocaleDateString('el-GR')})
+          <button class="btn-delete" onclick="deleteGivenLoan(${index})">Διαγραφή</button>
+        `;
+        givenList.appendChild(loanItem);
+      });
+      
+      // Προσθήκη δανείων που χρωστάς
+      loansOwed.forEach((loan, index) => {
+        const loanItem = document.createElement("div");
+        loanItem.className = "loan-item";
+        loanItem.innerHTML = `
+          <strong>${loan.name}</strong>: ${loan.amount.toFixed(2)}€ (${new Date(loan.date).toLocaleDateString('el-GR')})
+          <button class="btn-delete" onclick="deleteOwedLoan(${index})">Διαγραφή</button>
+        `;
+        owedList.appendChild(loanItem);
+      });
+    }
+
+    function deleteGivenLoan(index) {
+      if (confirm("Είστε σίγουρος ότι θέλετε να διαγράψετε αυτό το δάνειο;")) {
+        loansGiven.splice(index, 1);
+        saveData();
+        refreshLoans();
+      }
+    }
+
+    function deleteOwedLoan(index) {
+      if (confirm("Είστε σίγουρος ότι θέλετε να διαγράψετε αυτό το δάνειο;")) {
+        loansOwed.splice(index, 1);
+        saveData();
+        refreshLoans();
+      }
+    }
+
+    function downloadMonthlyReport() {
+        if (financeData.length === 0) {
+            alert("Δεν υπάρχουν δεδομένα για εξαγωγή αναφοράς.");
+            return;
+        }
+        
+        const latest = financeData[financeData.length - 1];
+        const content = `
+            <div class="pdf-template" style="background:white;color:black;">
+            <h1>Μηνιαία Οικονομική Αναφορά</h1>
+            <div class="period">${latest.month} ${latest.year}</div>
+            
+            <div class="summary">
+                <h2>Σύνοψη</h2>
+                <p><strong>Συνολικό Πορτοφόλι:</strong> ${latest.total.toFixed(2)}€</p>
+                <p><strong>Κατανομή Περιουσίας:</strong></p>
+                <ul>
+                <li>Cash: ${latest.cash.toFixed(2)}€</li>
+                <li>Etoro: ${latest.etoro.toFixed(2)}€</li>
+                <li>Revolut: ${latest.revolut.toFixed(2)}€</li>
+                <li>Winbank: ${latest.winbank.toFixed(2)}€</li>
+                <li>Stocks: ${latest.stocks.toFixed(2)}€</li>
+                <li>Youth Pass: ${(latest.youthpass ?? 0).toFixed(2)}€</li>
+                </ul>
+            </div>
+            
+            <h2>Λεπτομερής Κατάσταση</h2>
+            <table border="1" cellspacing="0" cellpadding="5" width="100%">
+                <tr>
+                <th>Πηγή</th>
+                <th>Ποσό (€)</th>
+                <th>Ποσοστό</th>
+                </tr>
+                <tr>
+                <td>Cash</td>
+                <td>${latest.cash.toFixed(2)}</td>
+                <td>${((latest.cash / latest.total) * 100).toFixed(1)}%</td>
+                </tr>
+                <tr>
+                <td>Etoro</td>
+                <td>${latest.etoro.toFixed(2)}</td>
+                <td>${((latest.etoro / latest.total) * 100).toFixed(1)}%</td>
+                </tr>
+                <tr>
+                <td>Revolut</td>
+                <td>${latest.revolut.toFixed(2)}</td>
+                <td>${((latest.revolut / latest.total) * 100).toFixed(1)}%</td>
+                </tr>
+                <tr>
+                <td>Winbank</td>
+                <td>${latest.winbank.toFixed(2)}</td>
+                <td>${((latest.winbank / latest.total) * 100).toFixed(1)}%</td>
+                </tr>
+                <tr>
+                <td>Stocks</td>
+                <td>${latest.stocks.toFixed(2)}</td>
+                <td>${((latest.stocks / latest.total) * 100).toFixed(1)}%</td>
+                </tr>
+                <tr>
+                <td>Youth Pass</td>
+                <td>${(latest.youthpass ?? 0).toFixed(2)}</td>
+                <td>${((latest.youthpass / latest.total) * 100).toFixed(1)}%</td>
+                </tr>
+            </table>
+            </div>
+        `;
+        
+        generatePDF(content, `SAVINGS ~ ${latest.month}_${latest.year}.pdf`);
+        }
+
+        function downloadYearlyReport() {
+        if (financeData.length === 0) {
+            alert("Δεν υπάρχουν δεδομένα για εξαγωγή αναφοράς.");
+            return;
+        }
+        
+        // Ομαδοποίηση δεδομένων ανά έτος
+        const dataByYear = {};
+        financeData.forEach(item => {
+            if (!dataByYear[item.year]) {
+            dataByYear[item.year] = [];
+            }
+            dataByYear[item.year].push(item);
+        });
+        
+        const selectedYear = document.getElementById("year").value;
+        const yearData = dataByYear[selectedYear] || [];
+        
+        if (yearData.length === 0) {
+            alert(`Δεν υπάρχουν δεδομένα για το έτος ${selectedYear}`);
+            return;
+        }
+        
+        let yearlyTotal = 0;
+        yearData.forEach(item => yearlyTotal += item.total);
+        
+        const prevYear = parseInt(selectedYear) - 1;
+        const prevYearData = dataByYear[prevYear] || [];
+        let prevYearTotal = 0;
+        prevYearData.forEach(item => prevYearTotal += item.total);
+        
+        const growth = prevYearTotal > 0 ? 
+            ((yearlyTotal - prevYearTotal) / prevYearTotal * 100).toFixed(2) : 0;
+        
+        let content = `
+            <div class="pdf-template" style="background:white;color:black;">
+            <h1>Ολική Πορεία Savings</h1>
+            <div class="period">Έτος ${selectedYear}</div>
+            
+            <div class="summary">
+                <h2>Σύνοψη Έτους</h2>
+                <p><strong>Συνολικό Πορτοφόλι:</strong> ${yearlyTotal.toFixed(2)}€</p>
+                <p><strong>Μεταβολή από ${prevYear}:</strong> ${growth}%</p>
+            </div>
+            
+            <h2>Μηνιαία Στοιχεία</h2>
+            <table border="1" cellspacing="0" cellpadding="5" width="100%">
+                <tr>
+                <th>Μήνας</th>
+                <th>Cash (€)</th>
+                <th>Etoro (€)</th>
+                <th>Revolut (€)</th>
+                <th>Winbank (€)</th>
+                <th>Stocks (€)</th>
+                <th>Youth Pass (€)</th>
+                <th>Σύνολο (€)</th>
+                </tr>
+        `;
+        
+        yearData.forEach(data => {
+            content += `
+            <tr>
+                <td>${data.month}</td>
+                <td>${data.cash.toFixed(2)}</td>
+                <td>${data.etoro.toFixed(2)}</td>
+                <td>${data.revolut.toFixed(2)}</td>
+                <td>${data.winbank.toFixed(2)}</td>
+                <td>${data.stocks.toFixed(2)}</td>
+                <td>${(data.youthpass ?? 0).toFixed(2)}</td>
+                <td><strong>${data.total.toFixed(2)}</strong></td>
+            </tr>
+            `;
+        });
+        
+        content += `
+            </table>
+            
+            <h2>Συνολικές Κατανομές για το ${selectedYear}</h2>
+            <table border="1" cellspacing="0" cellpadding="5" width="100%">
+                <tr>
+                <th>Πηγή</th>
+                <th>Συνολικό Ποσό (€)</th>
+                <th>Μέσο Ποσοστό</th>
+                </tr>
+        `;
+        
+        const categories = ['cash', 'etoro', 'revolut', 'winbank', 'stocks', 'youthpass'];
+        const categoryTotals = {};
+        const categoryAverages = {};
+        
+        categories.forEach(category => {
+            categoryTotals[category] = 0;
+            yearData.forEach(item => categoryTotals[category] += item[category]);
+            categoryAverages[category] = (categoryTotals[category] / yearlyTotal * 100).toFixed(1);
+        });
+        
+        categories.forEach(category => {
+            const name = category.charAt(0).toUpperCase() + category.slice(1);
+            content += `
+            <tr>
+                <td>${name}</td>
+                <td>${categoryTotals[category].toFixed(2)}</td>
+                <td>${categoryAverages[category]}%</td>
+            </tr>
+            `;
+        });
+        
+        content += `</table></div>`;
+        
+        generatePDF(content, `SAVINGS ~ ${selectedYear}.pdf`);
+        }
+
+
+    function generatePDF(content, filename) {
+      const element = document.createElement('div');
+      element.innerHTML = content;
+      
+      const opt = {
+        margin: 0.5,
+        filename: filename,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+      };
+      
+      html2pdf().set(opt).from(element).save();
+    }
+    // Λειτουργία εναλλαγής θέματος
+    const themeToggle = document.getElementById('themeToggle');
+    const themeOptions = document.getElementById('themeOptions');
+    const body = document.body;
+
+    // Έλεγχος για αποθηκευμένη προτίμηση θέματος
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    body.setAttribute('data-theme', savedTheme);
+    updateThemeIcon(savedTheme);
+
+    // Χειρισμός κλικ στο κουμπί αλλαγής θέματος
+    themeToggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    themeOptions.classList.toggle('show');
+    });
+
+    // Κλείσιμο του menu όταν γίνεται κλικ έξω από αυτό
+    document.addEventListener('click', (e) => {
+    if (!themeToggle.contains(e.target) && !themeOptions.contains(e.target)) {
+        themeOptions.classList.remove('show');
+    }
+    });
+
+    // Χειρισμός επιλογής θέματος
+    document.querySelectorAll('.theme-option').forEach(option => {
+    option.addEventListener('click', () => {
+        const theme = option.getAttribute('data-theme');
+        body.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        themeOptions.classList.remove('show');
+        updateThemeIcon(theme);
+        updateCharts();
+    });
+    });
+
+    function updateThemeIcon(theme) {
+    const icons = {
+        'light': '☀️',
+        'dark': '🌙',
+        'purple': '🎨'
+    };
+    themeToggle.textContent = icons[theme];
+        }
+        // Συνάρτηση για εμφάνιση toast notifications
+    function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.style.background = type === 'success' ? 'var(--success)' : 'var(--accent)';
+    toast.classList.add('show');
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+    }
+
+    // Συνάρτηση για loading state
+    function setLoadingState(isLoading) {
+    const loader = document.getElementById('loadingIndicator');
+    const charts = document.querySelectorAll('.chart-container');
+    
+    if (isLoading) {
+        loader.style.display = 'block';
+        charts.forEach(chart => chart.classList.add('loading'));
+    } else {
+        loader.style.display = 'none';
+        charts.forEach(chart => chart.classList.remove('loading'));
+    }
+    }
+
+    // Βελτιωμένη addData με loading state και feedback
+    async function addData() {
+    setLoadingState(true);
+
+    try {
+        const month = document.getElementById("month").value;
+        const year = document.getElementById("year").value;
+        const cash = parseFloat(document.getElementById("cash").value) || 0;
+        const etoro = parseFloat(document.getElementById("etoro").value) || 0;
+        const revolut = parseFloat(document.getElementById("revolut").value) || 0;
+        const winbank = parseFloat(document.getElementById("winbank").value) || 0;
+        const stocks = parseFloat(document.getElementById("stocks").value) || 0;
+        const youthpass = parseFloat(document.getElementById("youthpass").value) || 0;
+
+        // Validation
+        if ([cash, etoro, revolut, winbank, stocks, youthpass].some(v => v < 0)) {
+        showToast('Οι τιμές δεν μπορούν να είναι αρνητικές', 'error');
+        setLoadingState(false);
+        return;
+        }
+
+        const total = cash + etoro + revolut + winbank + stocks + youthpass;
+
+        const existingIndex = financeData.findIndex(d => 
+        d.month.toLowerCase() === month.toLowerCase() && d.year === year
+        );
+
+        if (existingIndex !== -1) {
+        financeData[existingIndex] = {month, year, cash, etoro, revolut, winbank, stocks, youthpass, total};
+        } else {
+        financeData.push({month, year, cash, etoro, revolut, winbank, stocks, youthpass, total});
+        }
+
+        saveData();
+        refreshTable();
+        updateKPIs();
+        updateCharts();
+        showToast('Τα δεδομένα αποθηκεύτηκαν επιτυχώς!');
+    } catch (error) {
+        showToast('Σφάλμα κατά την αποθήκευση των δεδομένων', 'error');
+    } finally {
+        setLoadingState(false);
+    }
+    }
+
+
+    // Λειτουργία αναζήτησης και φιλτραρίσματος
+    document.getElementById('searchInput').addEventListener('input', filterTable);
+    document.getElementById('yearFilter').addEventListener('change', filterTable);
+
+    function filterTable() {
+    const searchText = document.getElementById('searchInput').value.toLowerCase();
+    const yearFilter = document.getElementById('yearFilter').value;
+    const rows = document.querySelectorAll('#dataTable tbody tr');
+    
+    rows.forEach(row => {
+        const month = row.cells[0].textContent.toLowerCase();
+        const year = row.cells[1].textContent;
+        
+        const matchesSearch = month.includes(searchText);
+        const matchesYear = !yearFilter || year === yearFilter;
+        
+        row.style.display = (matchesSearch && matchesYear) ? '' : 'none';
+    });
+    }
+        // Λειτουργία απόκρυψης/προβολής δεδομένων
+        // Αντικατάσταση της συνάρτησης togglePrivacy
+    function togglePrivacy() {
+        // Κάνε blur μόνο τα νούμερα στα KPIs
+        const kpiValues = document.querySelectorAll('.kpi-value');
+        
+        // Κάνε blur μόνο τα νούμερα στον πίνακα δεδομένων (όλες οι στήλες εκτός από μήνα, έτος και ενέργειες)
+        const dataTable = document.getElementById('dataTable');
+        const rows = dataTable.querySelectorAll('tbody tr');
+        
+        kpiValues.forEach(element => {
+            if (isBlurred) {
+                element.classList.add('blur-numbers');
+            } else {
+                element.classList.remove('blur-numbers');
+            }
+        });
+        
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            // Κάνε blur όλα τα κελιά εκτός από το πρώτο (μήνας), δεύτερο (έτος) και τελευταίο (ενέργειες)
+            for (let i = 2; i < cells.length - 1; i++) {
+                if (isBlurred) {
+                    cells[i].classList.add('blur-numbers');
+                } else {
+                    cells[i].classList.remove('blur-numbers');
+                }
+            }
+        });
+        
+        // Αλλαγή εικονιδίου
+        const privacyButton = document.getElementById('privacyToggle');
+        privacyButton.textContent = isBlurred ? '🔒' : '👁️';
+        privacyButton.setAttribute('data-tooltip', isBlurred ? 'Εμφάνιση δεδομένων' : 'Απόκρυψη δεδομένων');
+        
+        // Αποθήκευση της προτίμησης
+        localStorage.setItem('privacyMode', isBlurred);
+    }
+        // Προσθήκη event listener για το κουμπί απόκρυψης
+    document.getElementById('privacyToggle').addEventListener('click', function() {
+        isBlurred = !isBlurred;
+        togglePrivacy();
+    });
+
+    // Έλεγχος για αποθηκευμένη προτίμηση κατά τη φόρτωση
+    const savedPrivacyMode = localStorage.getItem('privacyMode') === 'true';
+    if (savedPrivacyMode) {
+        isBlurred = true;
+        // Χρησιμοποιούμε setTimeout για να εφαρμοστεί μετά τη φόρτωση της σελίδας
+        setTimeout(togglePrivacy, 100);
+    }
+  </script>
+</body>
+</html>
