@@ -652,6 +652,45 @@
         right: 10px;
       }
     }
+    @media (max-width: 768px) {
+      input, select, button {
+        font-size: 1rem;
+        padding: 14px;
+      }
+      
+      button, .btn {
+        min-height: 48px; /* άνετο tap */
+      }
+    }
+    @media (max-width: 768px) {
+      .kpi-container {
+        flex-direction: column;
+        gap: 10px;
+      }
+    }
+    @media (max-width: 768px) {
+      table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+        font-size: 0.8rem;
+      }
+      th, td {
+        padding: 6px;
+      }
+    }
+    @media (max-width: 768px) {
+      .chart-container {
+        height: 200px !important;
+      }
+    }
+    @media (max-width: 768px) {
+      .card {
+        padding: 15px;
+        margin-bottom: 15px;
+      }
+    }
+
 
     /* PDF specific styles */
     .pdf-template {
