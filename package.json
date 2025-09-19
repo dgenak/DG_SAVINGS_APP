@@ -1,14 +1,16 @@
 {
   "name": "dg-savings-app",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Εφαρμογή διαχείρισης οικονομικών και αποταμιεύσεων",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
+    "dev": "electronmon .",
     "dist": "electron-builder",
     "dist-win": "electron-builder --win",
     "build": "electron-builder --publish=never",
     "build-portable": "electron-packager . \"DG Savings App\" --platform=win32 --arch=x64 --out=dist/ --overwrite",
+    "postinstall": "electron-builder install-app-deps",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -23,7 +25,12 @@
     "@electron/rebuild": "^4.0.1",
     "electron": "^27.3.11",
     "electron-builder": "^24.6.4",
-    "electron-packager": "^17.1.2"
+    "electron-packager": "^17.1.2",
+    "electron-reload": "^2.0.0-alpha.1",
+    "electronmon": "^2.0.3"
+  },
+  "dependencies": {
+    "electron-updater": "^6.6.2"
   },
   "build": {
     "appId": "com.dg.savings-app",
@@ -33,9 +40,8 @@
     },
     "files": [
       "**/*",
-      "!node_modules",
-      "!dist",
-      "!.vscode"
+      "!dist/**",
+      "!.vscode/**"
     ],
     "win": {
       "target": [
